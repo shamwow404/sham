@@ -158,9 +158,13 @@ function generateThreeJSArm(jointTypes, linkLengths) {
 
     const jointObjects = [];
 
-    // Clear old sliders if any
     const sliderArea = document.getElementById("joint-angle-sliders");
-    if (sliderArea) sliderArea.innerHTML = "";
+    if (sliderArea) {
+        sliderArea.innerHTML = "";
+        sliderArea.style.display = "flex";
+        sliderArea.style.flexWrap = "wrap";
+        sliderArea.style.gap = "10px";
+    }
 
     for (let i = 0; i < jointTypes.length; i++) {
         const joint = new THREE.Object3D();
@@ -191,24 +195,47 @@ function generateThreeJSArm(jointTypes, linkLengths) {
 
         jointObjects.push(joint);
 
-        // Add a slider if it's a revolute joint
-        if (jointTypes[i] === "revolute" && sliderArea) {
+        if (sliderArea) {
+            const sliderWrapper = document.createElement("div");
+            sliderWrapper.style.display = "flex";
+            sliderWrapper.style.alignItems = "center";
+            sliderWrapper.style.gap = "5px";
+            sliderWrapper.style.minWidth = "230px";
+
             const sliderLabel = document.createElement("label");
-            sliderLabel.textContent = `Joint ${i + 1} Angle: `;
+            sliderLabel.textContent =
+                jointTypes[i] === "revolute"
+                    ? `Joint ${i + 1} Angle:`
+                    : `Joint ${i + 1} Extension:`;
+
             const slider = document.createElement("input");
             slider.type = "range";
-            slider.min = -180;
-            slider.max = 180;
-            slider.value = 0;
-            slider.step = 1;
 
-            slider.addEventListener("input", () => {
-                joint.rotation.z = THREE.MathUtils.degToRad(parseFloat(slider.value));
-                renderer.render(scene, camera);
-            });
+            if (jointTypes[i] === "revolute") {
+                slider.min = -180;
+                slider.max = 180;
+                slider.step = 1;
+                slider.value = 0;
+                slider.style.accentColor = "#ff69b4"; // pink
+                slider.addEventListener("input", () => {
+                    joint.rotation.z = THREE.MathUtils.degToRad(parseFloat(slider.value));
+                    renderer.render(scene, camera);
+                });
+            } else {
+                slider.min = -0.5;
+                slider.max = 0.5;
+                slider.step = 0.01;
+                slider.value = 0;
+                slider.style.accentColor = "#87ceeb"; // sky blue
+                slider.addEventListener("input", () => {
+                    joint.position.y = (linkLengths[i - 1] || 0) + parseFloat(slider.value);
+                    renderer.render(scene, camera);
+                });
+            }
 
-            sliderLabel.appendChild(slider);
-            sliderArea.appendChild(sliderLabel);
+            sliderWrapper.appendChild(sliderLabel);
+            sliderWrapper.appendChild(slider);
+            sliderArea.appendChild(sliderWrapper);
         }
     }
 
