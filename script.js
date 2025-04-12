@@ -123,13 +123,12 @@ function generateThreeJSArm(jointTypes, linkLengths) {
     const container = document.getElementById("three-arm-container");
     container.innerHTML = "";
 
-    // Calculate total arm height + padding
-    const totalHeight = linkLengths.reduce((acc, len) => acc + len, 0);
-    const armVisualHeight = totalHeight + 0.3; // Add margin
-
-    container.style.height = `${Math.max(400, armVisualHeight * 300)}px`;
-
     const scene = new THREE.Scene();
+
+    const totalHeight = linkLengths.reduce((acc, len) => acc + len, 0);
+    const midHeight = totalHeight / 2;
+
+    container.style.height = `${Math.max(300, totalHeight * 200)}px`;
 
     const camera = new THREE.PerspectiveCamera(
         45,
@@ -137,15 +136,15 @@ function generateThreeJSArm(jointTypes, linkLengths) {
         0.1,
         1000
     );
-    camera.position.set(0.5, armVisualHeight / 2, armVisualHeight + 1.5);
-    camera.lookAt(0, armVisualHeight / 2, 0);
+    camera.position.set(0.5, midHeight, totalHeight + 2);
+    camera.lookAt(0, midHeight, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
     const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(2, armVisualHeight + 1, 2);
+    light.position.set(2, totalHeight + 1, 2);
     scene.add(light);
 
     const base = new THREE.Mesh(
@@ -156,7 +155,7 @@ function generateThreeJSArm(jointTypes, linkLengths) {
     scene.add(base);
 
     let current = new THREE.Object3D();
-    current.position.y = 0.2; // start on top of base
+    current.position.y = 0.2; // top of base
     scene.add(current);
 
     const sliderArea = document.getElementById("joint-angle-sliders");
@@ -181,16 +180,17 @@ function generateThreeJSArm(jointTypes, linkLengths) {
         link.position.y = len / 2;
         joint.add(link);
 
+        // End effector
         if (i === jointTypes.length - 1) {
             const effector = new THREE.Mesh(
                 new THREE.SphereGeometry(0.07, 16, 16),
                 new THREE.MeshStandardMaterial({ color: 0xffff00 })
             );
-            effector.position.y = len / 2;
-            link.add(effector);
+            effector.position.y = len;
+            joint.add(effector);
         }
 
-        // UI
+        // Create UI slider
         const sliderWrapper = document.createElement("div");
         sliderWrapper.style.display = "flex";
         sliderWrapper.style.alignItems = "center";
@@ -220,7 +220,8 @@ function generateThreeJSArm(jointTypes, linkLengths) {
             slider.style.accentColor = "#87ceeb";
             sliderLabel.textContent = `Joint ${i + 1} Extension:`;
             slider.addEventListener("input", () => {
-                joint.position.y = len + parseFloat(slider.value); // extend full joint
+                link.scale.y = 1 + parseFloat(slider.value) / len;
+                link.position.y = (len * link.scale.y) / 2;
                 renderer.render(scene, camera);
             });
         }
@@ -229,7 +230,6 @@ function generateThreeJSArm(jointTypes, linkLengths) {
         sliderWrapper.appendChild(slider);
         sliderArea.appendChild(sliderWrapper);
 
-        // Continue stacking
         joint.position.y = len;
         current = joint;
     }
