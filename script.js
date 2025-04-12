@@ -274,3 +274,41 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("gesture-preview-card").style.display = "block";
   });
 });
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const expandButtons = document.querySelectorAll(".expand-btn, .expand-project-btn");
+  
+    expandButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const parentCard = btn.closest(".project-preview");
+        const targetId = btn.dataset.target || (parentCard?.id === "arm-preview-card" ? "arm-builder-ui" : null);
+  
+        if (!targetId) {
+          const content = btn.nextElementSibling;
+          if (content && content.classList.contains("expand-content")) {
+            content.style.display = content.style.display === "block" ? "none" : "block";
+          }
+          return;
+        }
+  
+        const target = document.getElementById(targetId);
+        if (target && parentCard) {
+          parentCard.style.display = "none";
+          target.style.display = "block";
+        }
+      });
+    });
+  
+    const collapseButtons = document.querySelectorAll("#collapse-builder, #collapse-gesture");
+    collapseButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = btn.closest(".project-full");
+        const previewId = target?.id === "gesture-ui" ? "gesture-preview-card" : "arm-preview-card";
+        target.style.display = "none";
+        const preview = document.getElementById(previewId);
+        if (preview) preview.style.display = "block";
+      });
+    });
+  });
+  
