@@ -124,16 +124,23 @@ function generateThreeJSArm(jointTypes, linkLengths) {
     container.innerHTML = "";
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.set(2, 2, 4);
-    camera.lookAt(0, 0, 0);
+    const totalHeight = linkLengths.reduce((acc, len) => acc + len, 0) + 0.5;
+
+    const camera = new THREE.PerspectiveCamera(
+        45,
+        container.clientWidth / container.clientHeight,
+        0.1,
+        1000
+    );
+    camera.position.set(0, totalHeight / 2, totalHeight);
+    camera.lookAt(0, totalHeight / 2, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
     const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(2, 5, 5).normalize();
+    light.position.set(0, totalHeight, totalHeight).normalize();
     scene.add(light);
 
     const base = new THREE.Mesh(
@@ -152,7 +159,9 @@ function generateThreeJSArm(jointTypes, linkLengths) {
 
         const link = new THREE.Mesh(
             new THREE.BoxGeometry(0.1, len, 0.1),
-            new THREE.MeshStandardMaterial({ color: jointTypes[i] === "revolute" ? 0xff69b4 : 0x87ceeb })
+            new THREE.MeshStandardMaterial({
+                color: jointTypes[i] === "revolute" ? 0xff69b4 : 0x87ceeb,
+            })
         );
         link.position.y = len / 2;
         joint.add(link);
@@ -163,4 +172,12 @@ function generateThreeJSArm(jointTypes, linkLengths) {
     }
 
     renderer.render(scene, camera);
+
+    // Optional: resize support
+    window.addEventListener("resize", () => {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.render(scene, camera);
+    });
 }
