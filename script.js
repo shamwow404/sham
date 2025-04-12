@@ -244,7 +244,7 @@ function setupJointSliders(jointMeshes) {
 }
 
 
-import { setupHandGestureApp } from './hand-gesture.js';
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const expandButtons = document.querySelectorAll(".expand-project-btn");
