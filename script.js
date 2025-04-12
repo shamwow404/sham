@@ -123,11 +123,13 @@ function generateThreeJSArm(jointTypes, linkLengths) {
     const container = document.getElementById("three-arm-container");
     container.innerHTML = "";
 
-    const scene = new THREE.Scene();
-
+    // Calculate total arm height + padding
     const totalHeight = linkLengths.reduce((acc, len) => acc + len, 0);
-    container.style.height = `${Math.max(300, totalHeight * 200)}px`;
-    const midHeight = totalHeight / 2;
+    const armVisualHeight = totalHeight + 0.3; // Add margin
+
+    container.style.height = `${Math.max(400, armVisualHeight * 300)}px`;
+
+    const scene = new THREE.Scene();
 
     const camera = new THREE.PerspectiveCamera(
         45,
@@ -135,25 +137,26 @@ function generateThreeJSArm(jointTypes, linkLengths) {
         0.1,
         1000
     );
-    camera.position.set(0.5, midHeight, totalHeight + 2);
-    camera.lookAt(0, midHeight, 0);
+    camera.position.set(0.5, armVisualHeight / 2, armVisualHeight + 1.5);
+    camera.lookAt(0, armVisualHeight / 2, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
     const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(2, totalHeight, 2);
+    light.position.set(2, armVisualHeight + 1, 2);
     scene.add(light);
 
     const base = new THREE.Mesh(
         new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32),
         new THREE.MeshStandardMaterial({ color: 0xaaaaaa })
     );
+    base.position.y = 0.1;
     scene.add(base);
 
     let current = new THREE.Object3D();
-    current.position.y = 0.1;
+    current.position.y = 0.2; // start on top of base
     scene.add(current);
 
     const sliderArea = document.getElementById("joint-angle-sliders");
@@ -165,7 +168,7 @@ function generateThreeJSArm(jointTypes, linkLengths) {
     }
 
     for (let i = 0; i < jointTypes.length; i++) {
-        const jointType = jointTypes[i];
+        const type = jointTypes[i];
         const len = linkLengths[i];
 
         const joint = new THREE.Object3D();
@@ -173,24 +176,21 @@ function generateThreeJSArm(jointTypes, linkLengths) {
 
         const link = new THREE.Mesh(
             new THREE.BoxGeometry(0.1, len, 0.1),
-            new THREE.MeshStandardMaterial({
-                color: jointType === "revolute" ? 0xff69b4 : 0x87ceeb
-            })
+            new THREE.MeshStandardMaterial({ color: type === "revolute" ? 0xff69b4 : 0x87ceeb })
         );
         link.position.y = len / 2;
         joint.add(link);
 
-        // End effector
         if (i === jointTypes.length - 1) {
             const effector = new THREE.Mesh(
                 new THREE.SphereGeometry(0.07, 16, 16),
                 new THREE.MeshStandardMaterial({ color: 0xffff00 })
             );
-            effector.position.y = len;
+            effector.position.y = len / 2;
             link.add(effector);
         }
 
-        // UI Setup
+        // UI
         const sliderWrapper = document.createElement("div");
         sliderWrapper.style.display = "flex";
         sliderWrapper.style.alignItems = "center";
@@ -201,7 +201,7 @@ function generateThreeJSArm(jointTypes, linkLengths) {
         const slider = document.createElement("input");
         slider.type = "range";
 
-        if (jointType === "revolute") {
+        if (type === "revolute") {
             slider.min = -180;
             slider.max = 180;
             slider.step = 1;
@@ -220,7 +220,7 @@ function generateThreeJSArm(jointTypes, linkLengths) {
             slider.style.accentColor = "#87ceeb";
             sliderLabel.textContent = `Joint ${i + 1} Extension:`;
             slider.addEventListener("input", () => {
-                link.position.y = len / 2 + parseFloat(slider.value);
+                joint.position.y = len + parseFloat(slider.value); // extend full joint
                 renderer.render(scene, camera);
             });
         }
@@ -229,7 +229,7 @@ function generateThreeJSArm(jointTypes, linkLengths) {
         sliderWrapper.appendChild(slider);
         sliderArea.appendChild(sliderWrapper);
 
-        // Advance the chain
+        // Continue stacking
         joint.position.y = len;
         current = joint;
     }
@@ -243,5 +243,3 @@ function generateThreeJSArm(jointTypes, linkLengths) {
         renderer.render(scene, camera);
     });
 }
-
-
