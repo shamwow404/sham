@@ -43,7 +43,7 @@
       <div class="content-box project-full" id="arm-builder-ui" style="display: none;">
         <h3>🦾 Build a Custom Robot Arm</h3>
         <p>
-          This prototype lets you experiment with robotic kinematics by customizing joint types (revolute or prismatic) and link lengths. Once configured, the system visualizes your design in a real-time 3D simulation using Three.js. It's designed for rapid prototyping, educational use, or just to explore how robot arms are constructed and move. Coming soon: full deployment mode with draggable blocks and task-solving environments.
+          This prototype lets you experiment with robotic kinematics by customizing joint types (revolute or prismatic) and link lengths. Once configured, the system visualizes your design in a real-time 3D simulation using Three.js. It's designed for rapid prototyping, educational use, or just to explore how robot arms are constructed and move. Coming soon: full deployment mode with draggable blocks and task-solving environments
         </p>
         <label for="joint-count">Number of joints:</label>
         <input type="number" id="joint-count" min="1" max="6" value="3">
@@ -54,7 +54,9 @@
         <button id="collapse-builder">Collapse</button>
 
         <div id="arm-preview" style="margin-top: 1rem;">
-          <div id="three-arm-container" style="width: 100%; height: 300px;"></div>
+        
+          <div id="three-arm-container" style="width: 100%; height: 600px;"></div>
+
         </div>
       </div>
 

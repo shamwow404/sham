@@ -126,6 +126,8 @@ function generateThreeJSArm(jointTypes, linkLengths) {
     const scene = new THREE.Scene();
   
     const totalHeight = linkLengths.reduce((acc, len) => acc + len, 0);
+    container.style.height = `${Math.max(300, totalHeight * 200)}px`;
+
     const midHeight = totalHeight / 2;
   
     const camera = new THREE.PerspectiveCamera(
@@ -134,8 +136,9 @@ function generateThreeJSArm(jointTypes, linkLengths) {
       0.1,
       1000
     );
-    camera.position.set(0.5, midHeight, totalHeight + 1.5); // slightly right, centered Y, behind Z
-    camera.lookAt(0, midHeight, 0);
+    camera.position.set(0.5, midHeight, totalHeight + 2);  // give it more Z space
+camera.lookAt(0, midHeight, 0);
+
   
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
