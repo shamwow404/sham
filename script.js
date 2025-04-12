@@ -126,8 +126,7 @@ function generateThreeJSArm(jointTypes, linkLengths) {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
 
-    // Calculate total height for centering
-    const totalHeight = linkLengths.reduce((acc, len) => acc + len, 0);
+    const totalHeight = linkLengths.reduce((sum, len) => sum + len, 0);
     const midHeight = totalHeight / 2;
 
     const camera = new THREE.PerspectiveCamera(
@@ -154,28 +153,28 @@ function generateThreeJSArm(jointTypes, linkLengths) {
     base.position.set(0, 0.1, 0);
     scene.add(base);
 
-    let currentY = 0.2; // start right on top of base
+    let currentY = 0.2;
     const jointMeshes = [];
 
     for (let i = 0; i < jointTypes.length; i++) {
         const jointType = jointTypes[i];
         const length = linkLengths[i];
 
-        // Create joint object
         const jointGroup = new THREE.Group();
         jointGroup.position.y = currentY;
 
         const joint = new THREE.Object3D();
         jointGroup.add(joint);
 
-        // Link geometry
+        const color = jointType === "Prismatic" ? 0x6ECFF6 : 0xFF69B4;
+
         const geometry = new THREE.CylinderGeometry(0.05, 0.05, length, 16);
-        const material = new THREE.MeshPhongMaterial({ color: 0x8A2BE2 });
+        const material = new THREE.MeshPhongMaterial({ color });
         const link = new THREE.Mesh(geometry, material);
         link.position.y = length / 2;
         joint.add(link);
 
-        // Prismatic marker for visibility
+        // Optional visual cue for prismatic
         if (jointType === "Prismatic") {
             const axisMarker = new THREE.Mesh(
                 new THREE.BoxGeometry(0.03, length, 0.03),
@@ -191,16 +190,15 @@ function generateThreeJSArm(jointTypes, linkLengths) {
         currentY += length;
     }
 
-    // End effector sphere
+    // Add end effector to last joint
     const effectorGeometry = new THREE.SphereGeometry(0.07, 32, 32);
     const effectorMaterial = new THREE.MeshPhongMaterial({ color: 0xffd700 });
     const effector = new THREE.Mesh(effectorGeometry, effectorMaterial);
     const lastJoint = jointMeshes[jointMeshes.length - 1];
     effector.position.y = lastJoint.length;
-    lastJoint.joint.add(effector); // parent it to last joint
+    lastJoint.joint.add(effector);
     lastJoint.effector = effector;
 
-    // Animation function
     function animate() {
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
@@ -211,3 +209,38 @@ function generateThreeJSArm(jointTypes, linkLengths) {
     setupJointSliders(jointMeshes);
 }
 
+function setupJointSliders(jointMeshes) {
+    const slidersContainer = document.getElementById("joint-angle-sliders");
+    slidersContainer.innerHTML = "";
+
+    jointMeshes.forEach((jointData, index) => {
+        const label = document.createElement("label");
+        label.textContent = `Joint ${index + 1} ${jointData.type === "Prismatic" ? "Extension" : "Angle"}:`;
+
+        const slider = document.createElement("input");
+        slider.type = "range";
+        slider.min = jointData.type === "Prismatic" ? "0" : "-180";
+        slider.max = jointData.type === "Prismatic" ? "2" : "180";
+        slider.step = "0.01";
+        slider.value = "0";
+        slider.style.width = "150px";
+        slider.style.accentColor = jointData.type === "Prismatic" ? "#6ECFF6" : "#FF69B4";
+
+        slider.addEventListener("input", () => {
+            if (jointData.type === "Revolute") {
+                jointData.group.rotation.z = THREE.MathUtils.degToRad(parseFloat(slider.value));
+            } else {
+                jointData.joint.position.y = parseFloat(slider.value);
+            }
+        });
+
+        const wrapper = document.createElement("div");
+        wrapper.style.display = "flex";
+        wrapper.style.alignItems = "center";
+        wrapper.style.gap = "0.5rem";
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(slider);
+        slidersContainer.appendChild(wrapper);
+    });
+}
