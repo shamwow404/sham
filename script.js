@@ -1,4 +1,3 @@
-import { setupHandGestureApp } from "./hand-gesture.js";
 
 function launchHandApp(appWindow) {
   setupHandGestureApp(appWindow.querySelector(".app-content"));
