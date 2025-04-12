@@ -156,8 +156,6 @@ function generateThreeJSArm(jointTypes, linkLengths) {
     current.position.y = 0.1;
     scene.add(current);
 
-    const jointObjects = [];
-
     const sliderArea = document.getElementById("joint-angle-sliders");
     if (sliderArea) {
         sliderArea.innerHTML = "";
@@ -170,32 +168,32 @@ function generateThreeJSArm(jointTypes, linkLengths) {
         const joint = new THREE.Object3D();
         const len = linkLengths[i];
 
-        const link = new THREE.Mesh(
-            new THREE.BoxGeometry(0.1, len, 0.1),
-            new THREE.MeshStandardMaterial({
-                color: jointTypes[i] === "revolute" ? 0xff69b4 : 0x87ceeb
-            })
-        );
-        link.position.y = len / 2;
-        joint.add(link);
-
-        // Add end effector
-        if (i === jointTypes.length - 1) {
-            const effector = new THREE.Mesh(
-                new THREE.SphereGeometry(0.07, 16, 16),
-                new THREE.MeshStandardMaterial({ color: 0xffff00 })
+        if (jointTypes[i] === "revolute") {
+            const pivot = new THREE.Object3D();
+            const link = new THREE.Mesh(
+                new THREE.BoxGeometry(0.1, len, 0.1),
+                new THREE.MeshStandardMaterial({ color: 0xff69b4 })
             );
-            effector.position.y = len;
-            joint.add(effector);
-        }
+            link.position.y = len / 2;
+            pivot.add(link);
+            joint.add(pivot);
 
-        joint.position.y = linkLengths[i - 1] || 0;
-        current.add(joint);
-        current = joint;
+            // End effector
+            if (i === jointTypes.length - 1) {
+                const effector = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.07, 16, 16),
+                    new THREE.MeshStandardMaterial({ color: 0xffff00 })
+                );
+                effector.position.y = len;
+                link.add(effector);
+            }
 
-        jointObjects.push(joint);
+            // Add to scene
+            joint.position.y = linkLengths[i - 1] || 0;
+            current.add(joint);
+            current = joint;
 
-        if (sliderArea) {
+            // UI
             const sliderWrapper = document.createElement("div");
             sliderWrapper.style.display = "flex";
             sliderWrapper.style.alignItems = "center";
@@ -203,35 +201,73 @@ function generateThreeJSArm(jointTypes, linkLengths) {
             sliderWrapper.style.minWidth = "230px";
 
             const sliderLabel = document.createElement("label");
-            sliderLabel.textContent =
-                jointTypes[i] === "revolute"
-                    ? `Joint ${i + 1} Angle:`
-                    : `Joint ${i + 1} Extension:`;
+            sliderLabel.textContent = `Joint ${i + 1} Angle:`;
 
             const slider = document.createElement("input");
             slider.type = "range";
+            slider.min = -180;
+            slider.max = 180;
+            slider.step = 1;
+            slider.value = 0;
+            slider.style.accentColor = "#ff69b4";
 
-            if (jointTypes[i] === "revolute") {
-                slider.min = -180;
-                slider.max = 180;
-                slider.step = 1;
-                slider.value = 0;
-                slider.style.accentColor = "#ff69b4"; // pink
-                slider.addEventListener("input", () => {
-                    joint.rotation.z = THREE.MathUtils.degToRad(parseFloat(slider.value));
-                    renderer.render(scene, camera);
-                });
-            } else {
-                slider.min = -0.5;
-                slider.max = 0.5;
-                slider.step = 0.01;
-                slider.value = 0;
-                slider.style.accentColor = "#87ceeb"; // sky blue
-                slider.addEventListener("input", () => {
-                    joint.position.y = (linkLengths[i - 1] || 0) + parseFloat(slider.value);
-                    renderer.render(scene, camera);
-                });
+            slider.addEventListener("input", () => {
+                pivot.rotation.z = THREE.MathUtils.degToRad(parseFloat(slider.value));
+                renderer.render(scene, camera);
+            });
+
+            sliderWrapper.appendChild(sliderLabel);
+            sliderWrapper.appendChild(slider);
+            sliderArea.appendChild(sliderWrapper);
+        }
+
+        else if (jointTypes[i] === "prismatic") {
+            const slideGroup = new THREE.Object3D();
+            const slidingLink = new THREE.Mesh(
+                new THREE.BoxGeometry(0.1, len, 0.1),
+                new THREE.MeshStandardMaterial({ color: 0x87ceeb })
+            );
+            slidingLink.position.y = len / 2;
+            slideGroup.add(slidingLink);
+            joint.add(slideGroup);
+
+            // End effector
+            if (i === jointTypes.length - 1) {
+                const effector = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.07, 16, 16),
+                    new THREE.MeshStandardMaterial({ color: 0xffff00 })
+                );
+                effector.position.y = len;
+                slidingLink.add(effector);
             }
+
+            // Add to scene
+            joint.position.y = linkLengths[i - 1] || 0;
+            current.add(joint);
+            current = joint;
+
+            // UI
+            const sliderWrapper = document.createElement("div");
+            sliderWrapper.style.display = "flex";
+            sliderWrapper.style.alignItems = "center";
+            sliderWrapper.style.gap = "5px";
+            sliderWrapper.style.minWidth = "230px";
+
+            const sliderLabel = document.createElement("label");
+            sliderLabel.textContent = `Joint ${i + 1} Extension:`;
+
+            const slider = document.createElement("input");
+            slider.type = "range";
+            slider.min = -0.5;
+            slider.max = 0.5;
+            slider.step = 0.01;
+            slider.value = 0;
+            slider.style.accentColor = "#87ceeb";
+
+            slider.addEventListener("input", () => {
+                slideGroup.position.y = parseFloat(slider.value);
+                renderer.render(scene, camera);
+            });
 
             sliderWrapper.appendChild(sliderLabel);
             sliderWrapper.appendChild(slider);
