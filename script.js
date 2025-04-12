@@ -122,67 +122,103 @@ document.addEventListener("DOMContentLoaded", () => {
 function generateThreeJSArm(jointTypes, linkLengths) {
     const container = document.getElementById("three-arm-container");
     container.innerHTML = "";
-  
+
     const scene = new THREE.Scene();
-  
+
     const totalHeight = linkLengths.reduce((acc, len) => acc + len, 0);
     container.style.height = `${Math.max(300, totalHeight * 200)}px`;
-
     const midHeight = totalHeight / 2;
-  
-    const camera = new THREE.PerspectiveCamera(
-      45,
-      container.clientWidth / container.clientHeight,
-      0.1,
-      1000
-    );
-    camera.position.set(0.5, midHeight, totalHeight + 2);  // give it more Z space
-camera.lookAt(0, midHeight, 0);
 
-  
+    const camera = new THREE.PerspectiveCamera(
+        45,
+        container.clientWidth / container.clientHeight,
+        0.1,
+        1000
+    );
+    camera.position.set(0.5, midHeight, totalHeight + 2);
+    camera.lookAt(0, midHeight, 0);
+
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
-  
+
     const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(2, totalHeight, 2);
     scene.add(light);
-  
+
     const base = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32),
-      new THREE.MeshStandardMaterial({ color: 0xaaaaaa })
+        new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32),
+        new THREE.MeshStandardMaterial({ color: 0xaaaaaa })
     );
     scene.add(base);
-  
+
     let current = new THREE.Object3D();
     current.position.y = 0.1;
     scene.add(current);
-  
+
+    const jointObjects = [];
+
+    // Clear old sliders if any
+    const sliderArea = document.getElementById("joint-angle-sliders");
+    if (sliderArea) sliderArea.innerHTML = "";
+
     for (let i = 0; i < jointTypes.length; i++) {
-      const joint = new THREE.Object3D();
-      const len = linkLengths[i];
-  
-      const link = new THREE.Mesh(
-        new THREE.BoxGeometry(0.1, len, 0.1),
-        new THREE.MeshStandardMaterial({
-          color: jointTypes[i] === "revolute" ? 0xff69b4 : 0x87ceeb
-        })
-      );
-      link.position.y = len / 2;
-      joint.add(link);
-  
-      joint.position.y = linkLengths[i - 1] || 0;
-      current.add(joint);
-      current = joint;
+        const joint = new THREE.Object3D();
+        const len = linkLengths[i];
+
+        const link = new THREE.Mesh(
+            new THREE.BoxGeometry(0.1, len, 0.1),
+            new THREE.MeshStandardMaterial({
+                color: jointTypes[i] === "revolute" ? 0xff69b4 : 0x87ceeb
+            })
+        );
+        link.position.y = len / 2;
+        joint.add(link);
+
+        // Add end effector
+        if (i === jointTypes.length - 1) {
+            const effector = new THREE.Mesh(
+                new THREE.SphereGeometry(0.07, 16, 16),
+                new THREE.MeshStandardMaterial({ color: 0xffff00 })
+            );
+            effector.position.y = len;
+            joint.add(effector);
+        }
+
+        joint.position.y = linkLengths[i - 1] || 0;
+        current.add(joint);
+        current = joint;
+
+        jointObjects.push(joint);
+
+        // Add a slider if it's a revolute joint
+        if (jointTypes[i] === "revolute" && sliderArea) {
+            const sliderLabel = document.createElement("label");
+            sliderLabel.textContent = `Joint ${i + 1} Angle: `;
+            const slider = document.createElement("input");
+            slider.type = "range";
+            slider.min = -180;
+            slider.max = 180;
+            slider.value = 0;
+            slider.step = 1;
+
+            slider.addEventListener("input", () => {
+                joint.rotation.z = THREE.MathUtils.degToRad(parseFloat(slider.value));
+                renderer.render(scene, camera);
+            });
+
+            sliderLabel.appendChild(slider);
+            sliderArea.appendChild(sliderLabel);
+        }
     }
-  
+
     renderer.render(scene, camera);
-  
+
     window.addEventListener("resize", () => {
-      camera.aspect = container.clientWidth / container.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
-      renderer.render(scene, camera);
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.render(scene, camera);
     });
-  }
-  
+}
+
