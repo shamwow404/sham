@@ -122,62 +122,64 @@ document.addEventListener("DOMContentLoaded", () => {
 function generateThreeJSArm(jointTypes, linkLengths) {
     const container = document.getElementById("three-arm-container");
     container.innerHTML = "";
-
+  
     const scene = new THREE.Scene();
-    const totalHeight = linkLengths.reduce((acc, len) => acc + len, 0) + 0.5;
-
+  
+    const totalHeight = linkLengths.reduce((acc, len) => acc + len, 0);
+    const midHeight = totalHeight / 2;
+  
     const camera = new THREE.PerspectiveCamera(
-        45,
-        container.clientWidth / container.clientHeight,
-        0.1,
-        1000
+      45,
+      container.clientWidth / container.clientHeight,
+      0.1,
+      1000
     );
-    camera.position.set(0, totalHeight / 2, totalHeight);
-    camera.lookAt(0, totalHeight / 2, 0);
-
+    camera.position.set(0.5, midHeight, totalHeight + 1.5); // slightly right, centered Y, behind Z
+    camera.lookAt(0, midHeight, 0);
+  
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
-
+  
     const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(0, totalHeight, totalHeight).normalize();
+    light.position.set(2, totalHeight, 2);
     scene.add(light);
-
+  
     const base = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32),
-        new THREE.MeshStandardMaterial({ color: 0xaaaaaa })
+      new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32),
+      new THREE.MeshStandardMaterial({ color: 0xaaaaaa })
     );
     scene.add(base);
-
+  
     let current = new THREE.Object3D();
     current.position.y = 0.1;
     scene.add(current);
-
+  
     for (let i = 0; i < jointTypes.length; i++) {
-        const joint = new THREE.Object3D();
-        const len = linkLengths[i];
-
-        const link = new THREE.Mesh(
-            new THREE.BoxGeometry(0.1, len, 0.1),
-            new THREE.MeshStandardMaterial({
-                color: jointTypes[i] === "revolute" ? 0xff69b4 : 0x87ceeb,
-            })
-        );
-        link.position.y = len / 2;
-        joint.add(link);
-
-        joint.position.y = linkLengths[i - 1] || 0;
-        current.add(joint);
-        current = joint;
+      const joint = new THREE.Object3D();
+      const len = linkLengths[i];
+  
+      const link = new THREE.Mesh(
+        new THREE.BoxGeometry(0.1, len, 0.1),
+        new THREE.MeshStandardMaterial({
+          color: jointTypes[i] === "revolute" ? 0xff69b4 : 0x87ceeb
+        })
+      );
+      link.position.y = len / 2;
+      joint.add(link);
+  
+      joint.position.y = linkLengths[i - 1] || 0;
+      current.add(joint);
+      current = joint;
     }
-
+  
     renderer.render(scene, camera);
-
-    // Optional: resize support
+  
     window.addEventListener("resize", () => {
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.render(scene, camera);
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.render(scene, camera);
     });
-}
+  }
+  
