@@ -10,6 +10,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@300..700&display=swap"
     rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.14.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
+    
 
 
 </head>
@@ -63,11 +66,21 @@
       </div>
 
 
-      <!-- OTHER PROJECT CARDS BELOW -->
-      <div class="content-box project-preview other-projects">
-        <h3>📷 Object Detection DJ</h3>
-        <p>Use OpenCV to control EQ bands with gestures.</p>
+            <!-- PREVIEW CARD -->
+      <div class="content-box project-preview" id="gesture-preview-card">
+        <h3>✋ Hand Gesture Detector</h3>
+        <p>Use your webcam and hand gestures to see what your fingers are saying.</p>
+        <button class="expand-project-btn" data-target="gesture-ui">Try it →</button>
       </div>
+
+      <!-- FULL PROJECT UI (initially hidden) -->
+      <div class="content-box project-full" id="gesture-ui" style="display: none;">
+        <h3>✋ Real-Time Hand Gesture Recognition</h3>
+        <p>This app uses TensorFlow.js and your webcam to recognize simple hand gestures like pinch, point, and open palm, all in-browser with no downloads or server required.</p>
+        <button id="collapse-gesture">Collapse</button>
+        <div id="gesture-app-container" style="position: relative; width: 100%; max-width: 640px; margin-top: 1rem;"></div>
+      </div>
+
 
     </section>
 

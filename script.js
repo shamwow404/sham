@@ -1,20 +1,9 @@
-// script.js - Add any future interactivity here!
+import { setupHandGestureApp } from "./hand-gesture.js";
 
-console.log("✨ Welcome to my digital world! ✨");
+function launchHandApp(appWindow) {
+  setupHandGestureApp(appWindow.querySelector(".app-content"));
+}
 
-// Example: Simple hover effect for content boxes (optional)
-/*
-document.querySelectorAll('.content-box').forEach(box => {
-    box.addEventListener('mouseover', () => {
-        box.style.transform = 'scale(1.02)';
-        box.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
-    });
-    box.addEventListener('mouseout', () => {
-        box.style.transform = 'scale(1)';
-        box.style.boxShadow = 'none';
-    });
-});
-*/
 
 document.addEventListener('DOMContentLoaded', () => {
     const btn = document.querySelector('.expand-btn');
@@ -244,3 +233,34 @@ function setupJointSliders(jointMeshes) {
         slidersContainer.appendChild(wrapper);
     });
 }
+
+
+import { setupHandGestureApp } from './hand-gesture.js';
+
+document.addEventListener("DOMContentLoaded", () => {
+  const expandButtons = document.querySelectorAll(".expand-project-btn");
+
+  expandButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.dataset.target;
+      const fullUI = document.getElementById(targetId);
+      btn.parentElement.style.display = "none";
+      fullUI.style.display = "block";
+
+      // Launch gesture app if that's what we expanded
+      if (targetId === "gesture-ui") {
+        setupHandGestureApp(document.getElementById("gesture-app-container"));
+      }
+    });
+  });
+
+  document.getElementById("collapse-builder").addEventListener("click", () => {
+    document.getElementById("arm-builder-ui").style.display = "none";
+    document.getElementById("arm-preview-card").style.display = "block";
+  });
+
+  document.getElementById("collapse-gesture").addEventListener("click", () => {
+    document.getElementById("gesture-ui").style.display = "none";
+    document.getElementById("gesture-preview-card").style.display = "block";
+  });
+});
