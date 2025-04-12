@@ -166,6 +166,8 @@ function generateThreeJSArm(jointTypes, linkLengths) {
 
     for (let i = 0; i < jointTypes.length; i++) {
         const joint = new THREE.Object3D();
+        current.add(joint); // chain continues here
+
         const len = linkLengths[i];
 
         if (jointTypes[i] === "revolute") {
@@ -178,7 +180,6 @@ function generateThreeJSArm(jointTypes, linkLengths) {
             pivot.add(link);
             joint.add(pivot);
 
-            // End effector
             if (i === jointTypes.length - 1) {
                 const effector = new THREE.Mesh(
                     new THREE.SphereGeometry(0.07, 16, 16),
@@ -188,10 +189,9 @@ function generateThreeJSArm(jointTypes, linkLengths) {
                 link.add(effector);
             }
 
-            // Add to scene
-            joint.position.y = linkLengths[i - 1] || 0;
-            current.add(joint);
-            current = joint;
+            // push forward for next joint
+            pivot.position.y = len;
+            current = pivot;
 
             // UI
             const sliderWrapper = document.createElement("div");
@@ -212,7 +212,7 @@ function generateThreeJSArm(jointTypes, linkLengths) {
             slider.style.accentColor = "#ff69b4";
 
             slider.addEventListener("input", () => {
-                pivot.rotation.z = THREE.MathUtils.degToRad(parseFloat(slider.value));
+                joint.rotation.z = THREE.MathUtils.degToRad(parseFloat(slider.value));
                 renderer.render(scene, camera);
             });
 
@@ -222,29 +222,29 @@ function generateThreeJSArm(jointTypes, linkLengths) {
         }
 
         else if (jointTypes[i] === "prismatic") {
-            const slideGroup = new THREE.Object3D();
-            const slidingLink = new THREE.Mesh(
+            const sliderGroup = new THREE.Object3D();
+            const link = new THREE.Mesh(
                 new THREE.BoxGeometry(0.1, len, 0.1),
                 new THREE.MeshStandardMaterial({ color: 0x87ceeb })
             );
-            slidingLink.position.y = len / 2;
-            slideGroup.add(slidingLink);
-            joint.add(slideGroup);
+            link.position.y = len / 2;
+            sliderGroup.add(link);
+            joint.add(sliderGroup);
 
-            // End effector
             if (i === jointTypes.length - 1) {
                 const effector = new THREE.Mesh(
                     new THREE.SphereGeometry(0.07, 16, 16),
                     new THREE.MeshStandardMaterial({ color: 0xffff00 })
                 );
                 effector.position.y = len;
-                slidingLink.add(effector);
+                link.add(effector);
             }
 
-            // Add to scene
-            joint.position.y = linkLengths[i - 1] || 0;
-            current.add(joint);
+            // push forward by max (initial: zero offset)
+            sliderGroup.position.y = 0;
+            link.position.y = len / 2;
             current = joint;
+            joint.position.y = len;
 
             // UI
             const sliderWrapper = document.createElement("div");
@@ -258,14 +258,14 @@ function generateThreeJSArm(jointTypes, linkLengths) {
 
             const slider = document.createElement("input");
             slider.type = "range";
-            slider.min = -0.5;
+            slider.min = 0;
             slider.max = 0.5;
             slider.step = 0.01;
             slider.value = 0;
             slider.style.accentColor = "#87ceeb";
 
             slider.addEventListener("input", () => {
-                slideGroup.position.y = parseFloat(slider.value);
+                sliderGroup.position.y = parseFloat(slider.value);
                 renderer.render(scene, camera);
             });
 
@@ -284,4 +284,5 @@ function generateThreeJSArm(jointTypes, linkLengths) {
         renderer.render(scene, camera);
     });
 }
+
 
