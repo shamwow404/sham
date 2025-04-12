@@ -124,11 +124,11 @@ function generateThreeJSArm(jointTypes, linkLengths) {
     container.innerHTML = "";
 
     const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
 
+    // Calculate total height for centering
     const totalHeight = linkLengths.reduce((acc, len) => acc + len, 0);
     const midHeight = totalHeight / 2;
-
-    container.style.height = `${Math.max(300, totalHeight * 200)}px`;
 
     const camera = new THREE.PerspectiveCamera(
         45,
@@ -136,7 +136,7 @@ function generateThreeJSArm(jointTypes, linkLengths) {
         0.1,
         1000
     );
-    camera.position.set(0.5, midHeight, totalHeight + 2);
+    camera.position.set(0, midHeight, totalHeight * 1.5);
     camera.lookAt(0, midHeight, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -144,102 +144,70 @@ function generateThreeJSArm(jointTypes, linkLengths) {
     container.appendChild(renderer.domElement);
 
     const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(2, totalHeight + 1, 2);
+    light.position.set(10, 10, 10);
     scene.add(light);
 
-    const base = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32),
-        new THREE.MeshStandardMaterial({ color: 0xaaaaaa })
-    );
-    base.position.y = 0.1;
+    // Base
+    const baseGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32);
+    const baseMaterial = new THREE.MeshPhongMaterial({ color: 0x666666 });
+    const base = new THREE.Mesh(baseGeometry, baseMaterial);
+    base.position.set(0, 0.1, 0);
     scene.add(base);
 
-    let current = new THREE.Object3D();
-    current.position.y = 0.2; // top of base
-    scene.add(current);
-
-    const sliderArea = document.getElementById("joint-angle-sliders");
-    if (sliderArea) {
-        sliderArea.innerHTML = "";
-        sliderArea.style.display = "flex";
-        sliderArea.style.flexWrap = "wrap";
-        sliderArea.style.gap = "10px";
-    }
+    let currentY = 0.2; // start right on top of base
+    const jointMeshes = [];
 
     for (let i = 0; i < jointTypes.length; i++) {
-        const type = jointTypes[i];
-        const len = linkLengths[i];
+        const jointType = jointTypes[i];
+        const length = linkLengths[i];
+
+        // Create joint object
+        const jointGroup = new THREE.Group();
+        jointGroup.position.y = currentY;
 
         const joint = new THREE.Object3D();
-        current.add(joint);
+        jointGroup.add(joint);
 
-        const link = new THREE.Mesh(
-            new THREE.BoxGeometry(0.1, len, 0.1),
-            new THREE.MeshStandardMaterial({ color: type === "revolute" ? 0xff69b4 : 0x87ceeb })
-        );
-        link.position.y = len / 2;
+        // Link geometry
+        const geometry = new THREE.CylinderGeometry(0.05, 0.05, length, 16);
+        const material = new THREE.MeshPhongMaterial({ color: 0x8A2BE2 });
+        const link = new THREE.Mesh(geometry, material);
+        link.position.y = length / 2;
         joint.add(link);
 
-        // End effector
-        if (i === jointTypes.length - 1) {
-            const effector = new THREE.Mesh(
-                new THREE.SphereGeometry(0.07, 16, 16),
-                new THREE.MeshStandardMaterial({ color: 0xffff00 })
+        // Prismatic marker for visibility
+        if (jointType === "Prismatic") {
+            const axisMarker = new THREE.Mesh(
+                new THREE.BoxGeometry(0.03, length, 0.03),
+                new THREE.MeshPhongMaterial({ color: 0x00bfff })
             );
-            effector.position.y = len;
-            joint.add(effector);
+            axisMarker.position.y = length / 2;
+            joint.add(axisMarker);
         }
 
-        // Create UI slider
-        const sliderWrapper = document.createElement("div");
-        sliderWrapper.style.display = "flex";
-        sliderWrapper.style.alignItems = "center";
-        sliderWrapper.style.gap = "5px";
-        sliderWrapper.style.minWidth = "230px";
+        scene.add(jointGroup);
+        jointMeshes.push({ group: jointGroup, joint, type: jointType, length });
 
-        const sliderLabel = document.createElement("label");
-        const slider = document.createElement("input");
-        slider.type = "range";
-
-        if (type === "revolute") {
-            slider.min = -180;
-            slider.max = 180;
-            slider.step = 1;
-            slider.value = 0;
-            slider.style.accentColor = "#ff69b4";
-            sliderLabel.textContent = `Joint ${i + 1} Angle:`;
-            slider.addEventListener("input", () => {
-                joint.rotation.z = THREE.MathUtils.degToRad(parseFloat(slider.value));
-                renderer.render(scene, camera);
-            });
-        } else {
-            slider.min = 0;
-            slider.max = 0.5;
-            slider.step = 0.01;
-            slider.value = 0;
-            slider.style.accentColor = "#87ceeb";
-            sliderLabel.textContent = `Joint ${i + 1} Extension:`;
-            slider.addEventListener("input", () => {
-                link.scale.y = 1 + parseFloat(slider.value) / len;
-                link.position.y = (len * link.scale.y) / 2;
-                renderer.render(scene, camera);
-            });
-        }
-
-        sliderWrapper.appendChild(sliderLabel);
-        sliderWrapper.appendChild(slider);
-        sliderArea.appendChild(sliderWrapper);
-
-        joint.position.y = len;
-        current = joint;
+        currentY += length;
     }
 
-    renderer.render(scene, camera);
+    // End effector sphere
+    const effectorGeometry = new THREE.SphereGeometry(0.07, 32, 32);
+    const effectorMaterial = new THREE.MeshPhongMaterial({ color: 0xffd700 });
+    const effector = new THREE.Mesh(effectorGeometry, effectorMaterial);
+    const lastJoint = jointMeshes[jointMeshes.length - 1];
+    effector.position.y = lastJoint.length;
+    lastJoint.joint.add(effector); // parent it to last joint
+    lastJoint.effector = effector;
 
-    window.addEventListener("resize", () => {
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(container.clientWidth, container.clientHeight);
+    // Animation function
+    function animate() {
+        requestAnimationFrame(animate);
         renderer.render(scene, camera);
-    });
+    }
+
+    animate();
+
+    setupJointSliders(jointMeshes);
 }
+
