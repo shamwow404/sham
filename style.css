@@ -284,4 +284,12 @@ body {
     outline: none !important;
 }
 
+.about-img {
+    display: block;
+    margin: 1rem auto;
+    max-width: 120px;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 
