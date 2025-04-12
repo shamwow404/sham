@@ -165,114 +165,73 @@ function generateThreeJSArm(jointTypes, linkLengths) {
     }
 
     for (let i = 0; i < jointTypes.length; i++) {
-        const joint = new THREE.Object3D();
-        current.add(joint); // chain continues here
-
+        const jointType = jointTypes[i];
         const len = linkLengths[i];
 
-        if (jointTypes[i] === "revolute") {
-            const pivot = new THREE.Object3D();
-            const link = new THREE.Mesh(
-                new THREE.BoxGeometry(0.1, len, 0.1),
-                new THREE.MeshStandardMaterial({ color: 0xff69b4 })
+        const joint = new THREE.Object3D();
+        current.add(joint);
+
+        const link = new THREE.Mesh(
+            new THREE.BoxGeometry(0.1, len, 0.1),
+            new THREE.MeshStandardMaterial({
+                color: jointType === "revolute" ? 0xff69b4 : 0x87ceeb
+            })
+        );
+        link.position.y = len / 2;
+        joint.add(link);
+
+        // End effector
+        if (i === jointTypes.length - 1) {
+            const effector = new THREE.Mesh(
+                new THREE.SphereGeometry(0.07, 16, 16),
+                new THREE.MeshStandardMaterial({ color: 0xffff00 })
             );
-            link.position.y = len / 2;
-            pivot.add(link);
-            joint.add(pivot);
+            effector.position.y = len;
+            link.add(effector);
+        }
 
-            if (i === jointTypes.length - 1) {
-                const effector = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.07, 16, 16),
-                    new THREE.MeshStandardMaterial({ color: 0xffff00 })
-                );
-                effector.position.y = len;
-                link.add(effector);
-            }
+        // UI Setup
+        const sliderWrapper = document.createElement("div");
+        sliderWrapper.style.display = "flex";
+        sliderWrapper.style.alignItems = "center";
+        sliderWrapper.style.gap = "5px";
+        sliderWrapper.style.minWidth = "230px";
 
-            // push forward for next joint
-            pivot.position.y = len;
-            current = pivot;
+        const sliderLabel = document.createElement("label");
+        const slider = document.createElement("input");
+        slider.type = "range";
 
-            // UI
-            const sliderWrapper = document.createElement("div");
-            sliderWrapper.style.display = "flex";
-            sliderWrapper.style.alignItems = "center";
-            sliderWrapper.style.gap = "5px";
-            sliderWrapper.style.minWidth = "230px";
-
-            const sliderLabel = document.createElement("label");
-            sliderLabel.textContent = `Joint ${i + 1} Angle:`;
-
-            const slider = document.createElement("input");
-            slider.type = "range";
+        if (jointType === "revolute") {
             slider.min = -180;
             slider.max = 180;
             slider.step = 1;
             slider.value = 0;
             slider.style.accentColor = "#ff69b4";
-
+            sliderLabel.textContent = `Joint ${i + 1} Angle:`;
             slider.addEventListener("input", () => {
                 joint.rotation.z = THREE.MathUtils.degToRad(parseFloat(slider.value));
                 renderer.render(scene, camera);
             });
-
-            sliderWrapper.appendChild(sliderLabel);
-            sliderWrapper.appendChild(slider);
-            sliderArea.appendChild(sliderWrapper);
-        }
-
-        else if (jointTypes[i] === "prismatic") {
-            const sliderGroup = new THREE.Object3D();
-            const link = new THREE.Mesh(
-                new THREE.BoxGeometry(0.1, len, 0.1),
-                new THREE.MeshStandardMaterial({ color: 0x87ceeb })
-            );
-            link.position.y = len / 2;
-            sliderGroup.add(link);
-            joint.add(sliderGroup);
-
-            if (i === jointTypes.length - 1) {
-                const effector = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.07, 16, 16),
-                    new THREE.MeshStandardMaterial({ color: 0xffff00 })
-                );
-                effector.position.y = len;
-                link.add(effector);
-            }
-
-            // push forward by max (initial: zero offset)
-            sliderGroup.position.y = 0;
-            link.position.y = len / 2;
-            current = joint;
-            joint.position.y = len;
-
-            // UI
-            const sliderWrapper = document.createElement("div");
-            sliderWrapper.style.display = "flex";
-            sliderWrapper.style.alignItems = "center";
-            sliderWrapper.style.gap = "5px";
-            sliderWrapper.style.minWidth = "230px";
-
-            const sliderLabel = document.createElement("label");
-            sliderLabel.textContent = `Joint ${i + 1} Extension:`;
-
-            const slider = document.createElement("input");
-            slider.type = "range";
+        } else {
             slider.min = 0;
             slider.max = 0.5;
             slider.step = 0.01;
             slider.value = 0;
             slider.style.accentColor = "#87ceeb";
-
+            sliderLabel.textContent = `Joint ${i + 1} Extension:`;
             slider.addEventListener("input", () => {
-                sliderGroup.position.y = parseFloat(slider.value);
+                link.position.y = len / 2 + parseFloat(slider.value);
                 renderer.render(scene, camera);
             });
-
-            sliderWrapper.appendChild(sliderLabel);
-            sliderWrapper.appendChild(slider);
-            sliderArea.appendChild(sliderWrapper);
         }
+
+        sliderWrapper.appendChild(sliderLabel);
+        sliderWrapper.appendChild(slider);
+        sliderArea.appendChild(sliderWrapper);
+
+        // Advance the chain
+        joint.position.y = len;
+        current = joint;
     }
 
     renderer.render(scene, camera);
