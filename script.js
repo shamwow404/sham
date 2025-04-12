@@ -155,22 +155,28 @@ function generateThreeJSArm(jointTypes, linkLengths) {
         const joint = new THREE.Object3D();
         jointGroup.add(joint);
 
-        const color = jointType === "Prismatic" ? 0x6ECFF6 : 0xFF69B4;
+        if (jointType === "Revolute") {
+            const geometry = new THREE.CylinderGeometry(0.05, 0.05, length, 16);
+            const material = new THREE.MeshPhongMaterial({ color: 0xFF69B4 });
+            const link = new THREE.Mesh(geometry, material);
+            link.position.y = length / 2;
+            joint.add(link);
+        } else {
+            // Prismatic outer shell (pink)
+            const shellGeometry = new THREE.CylinderGeometry(0.05, 0.05, length, 16);
+            const shellMaterial = new THREE.MeshPhongMaterial({ color: 0xFFB6C1 });
+            const shell = new THREE.Mesh(shellGeometry, shellMaterial);
+            shell.position.y = length / 2;
+            joint.add(shell);
 
-        const geometry = new THREE.CylinderGeometry(0.05, 0.05, length, 16);
-        const material = new THREE.MeshPhongMaterial({ color });
-        const link = new THREE.Mesh(geometry, material);
-        link.position.y = length / 2;
-        joint.add(link);
-
-        // Optional visual cue for prismatic
-        if (jointType === "Prismatic") {
-            const axisMarker = new THREE.Mesh(
-                new THREE.BoxGeometry(0.03, length, 0.03),
-                new THREE.MeshPhongMaterial({ color: 0x00bfff })
-            );
-            axisMarker.position.y = length / 2;
-            joint.add(axisMarker);
+            // Prismatic inner (blue) moving part
+            const innerLength = length * 0.8;
+            const innerGeometry = new THREE.CylinderGeometry(0.04, 0.04, innerLength, 16);
+            const innerMaterial = new THREE.MeshPhongMaterial({ color: 0x6ECFF6 });
+            const innerLink = new THREE.Mesh(innerGeometry, innerMaterial);
+            innerLink.position.y = innerLength / 2;
+            innerLink.name = "prismaticInner";
+            joint.add(innerLink);
         }
 
         scene.add(jointGroup);
@@ -179,7 +185,7 @@ function generateThreeJSArm(jointTypes, linkLengths) {
         currentY += length;
     }
 
-    // Add end effector to last joint
+    // End effector on last joint
     const effectorGeometry = new THREE.SphereGeometry(0.07, 32, 32);
     const effectorMaterial = new THREE.MeshPhongMaterial({ color: 0xffd700 });
     const effector = new THREE.Mesh(effectorGeometry, effectorMaterial);
@@ -194,7 +200,6 @@ function generateThreeJSArm(jointTypes, linkLengths) {
     }
 
     animate();
-
     setupJointSliders(jointMeshes);
 }
 
@@ -219,7 +224,12 @@ function setupJointSliders(jointMeshes) {
             if (jointData.type === "Revolute") {
                 jointData.group.rotation.z = THREE.MathUtils.degToRad(parseFloat(slider.value));
             } else {
-                jointData.joint.position.y = parseFloat(slider.value);
+                const offset = parseFloat(slider.value);
+                jointData.joint.position.y = offset;
+
+                // Move the inner blue part up to reflect extension
+                const inner = jointData.joint.getObjectByName("prismaticInner");
+                if (inner) inner.position.y = offset + jointData.length * 0.4;
             }
         });
 
