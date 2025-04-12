@@ -1,0 +1,287 @@
+:root {
+    --primary-color: #FFB6C1; /* Baby Pink */
+    --secondary-color: #98FB98; /* Pale Green */
+    --accent-color: #FFDAE0; /* Lighter Pink */
+    --text-color: #555;
+    --bg-color: #FFF0F5; /* Lavender Blush - soft background */
+    --border-color: #FFC0CB; /* Pink */
+    --header-font: 'Pacifico', cursive;
+    --body-font: 'Quicksand', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--body-font);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    padding-top: 140px;
+     /* Subtle repeating pattern */
+    background-image: linear-gradient(45deg, var(--accent-color) 25%, transparent 25%),
+                      linear-gradient(-45deg, var(--accent-color) 25%, transparent 25%),
+                      linear-gradient(45deg, transparent 75%, var(--accent-color) 75%),
+                      linear-gradient(-45deg, transparent 75%, var(--accent-color) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+header {
+    background-color: var(--primary-color);
+    padding: 1rem 0 0.5rem 0;
+    text-align: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-bottom: 3px dashed var(--secondary-color);
+}
+
+header h1 {
+    font-family: var(--header-font);
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    margin-bottom: 0.5rem;
+    font-size: 2.5rem;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: inline-block;
+    border-radius: 15px;
+    padding: 0.3rem 0.5rem;
+}
+
+nav ul li {
+    display: inline-block;
+    margin: 0 10px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 10px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+nav ul li a:hover,
+nav ul li a.active {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+main {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent background */
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: white;
+    border: 2px dotted var(--primary-color);
+    border-radius: 10px;
+}
+
+section h2 {
+    font-family: var(--header-font);
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 2rem;
+}
+
+.content-box {
+    background-color: #fff; /* Ensure content background is solid */
+    padding: 15px;
+    border-radius: 8px;
+    /* border: 1px solid var(--border-color); */ /* Optional: add border to inner box */
+}
+
+.content-box p, .content-box ul li {
+     margin-bottom: 0.8rem;
+}
+
+.content-box ul {
+    list-style-type: '💖'; /* Custom bullet point */
+    padding-left: 25px;
+}
+.content-box ul li::marker {
+    margin-right: 5px; /* Space after bullet */
+}
+
+.update-columns {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.update-box {
+    flex: 1; /* Each box takes equal space */
+    min-width: 250px; /* Minimum width before wrapping */
+    border: 1px dashed var(--secondary-color);
+    background-color: #F0FFF0; /* Honeydew - light green background */
+}
+
+.update-box h3 {
+    color: #2E8B57; /* SeaGreen */
+    margin-bottom: 0.5rem;
+    text-align: center;
+    font-family: var(--header-font);
+}
+.update-box h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+.update-box a {
+    color: var(--primary-color);
+    font-weight: bold;
+    text-decoration: none;
+}
+.update-box a:hover {
+    text-decoration: underline;
+}
+
+
+footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 1rem;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+/* Simple fade-in animation */
+body {
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2rem;
+    }
+    nav ul li {
+        margin: 0 5px;
+    }
+    nav ul li a {
+        padding: 4px 8px;
+    }
+    main {
+        margin: 1rem auto;
+        padding: 0.5rem;
+    }
+    section {
+        padding: 1rem;
+    }
+    .update-columns {
+        flex-direction: column; /* Stack columns */
+    }
+}
+
+@media (max-width: 480px) {
+     body {
+        padding-top: 130px; /* Adjust for potentially taller header */
+     }
+    header h1 {
+        font-size: 1.5rem;
+    }
+     nav ul {
+        padding: 0.2rem 0.3rem;
+    }
+    nav ul li {
+       display: block; /* Stack nav items */
+       margin: 5px 0;
+    }
+    nav ul li a {
+        display: block; /* Make links full width */
+    }
+    section h2 {
+        font-size: 1.5rem;
+    }
+}
+
+.expandable {
+    margin-top: 1rem;
+}
+
+.expand-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.expand-btn:hover {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.expand-content {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: var(--accent-color);
+    border-radius: 8px;
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.social-icons a {
+    display: inline-block;
+    padding: 4px;
+    border-radius: 6px;
+    background-color: transparent;
+    text-decoration: none;
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.social-icons a:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.social-icons img {
+    display: block;
+    width: 16px;
+    height: 16px;
+    image-rendering: crisp-edges;
+    border: none !important;
+    outline: none !important;
+}
+
+
