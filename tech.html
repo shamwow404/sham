@@ -34,52 +34,48 @@
   <main>
     <section id="prototypes">
       <h2>🤖 Tech Prototypes 🤖</h2>
+<!-- Preview Card for Arm Builder -->
+<div class="content-box project-preview" id="arm-preview-card">
+    <h3>🦾 Robot Arm Builder</h3>
+    <p>Create your own simulated robot arm with custom joint types and link lengths.</p>
+    <button class="expand-project-btn" data-target="arm-builder-ui">Try it →</button>
+</div>
 
-      <!-- PREVIEW CARD -->
-      <div class="content-box project-preview" id="arm-preview-card">
-        <h3>🦾 Robot Arm Builder</h3>
-        <p>Create your own simulated robot arm with custom joint types and link lengths.</p>
-        <button class="expand-project-btn">Try it →</button>
-      </div>
+<!-- Full Project UI for Arm Builder -->
+<div class="content-box project-full" id="arm-builder-ui" style="display: none;">
+    <h3>🦾 Build a Custom Robot Arm</h3>
+    <p>This prototype lets you experiment with robotic kinematics by customizing joint types (revolute or prismatic) and link lengths. Once configured, the system visualizes your design in a real-time 3D simulation using Three.js. It's designed for rapid prototyping, educational use, or just to explore how robot arms are constructed and move. Coming soon: full deployment mode with draggable blocks and task-solving environments.</p>
+    
+    <label for="joint-count">Number of joints:</label>
+    <input type="number" id="joint-count" min="1" max="6" value="3">
 
-      <!-- FULL PROJECT UI (initially hidden) -->
-      <div class="content-box project-full" id="arm-builder-ui" style="display: none;">
-        <h3>🦾 Build a Custom Robot Arm</h3>
-        <p>
-          This prototype lets you experiment with robotic kinematics by customizing joint types (revolute or prismatic) and link lengths. Once configured, the system visualizes your design in a real-time 3D simulation using Three.js. It's designed for rapid prototyping, educational use, or just to explore how robot arms are constructed and move. Coming soon: full deployment mode with draggable blocks and task-solving environments
-        </p>
-        <label for="joint-count">Number of joints:</label>
-        <input type="number" id="joint-count" min="1" max="6" value="3">
+    <div id="joint-configs"></div>
 
-        <div id="joint-configs"></div>
+    <button id="generate-arm">Simulate</button>
+    <button id="collapse-builder">Collapse</button>
 
-        <button id="generate-arm">Simulate</button>
-        <button id="collapse-builder">Collapse</button>
+    <div id="arm-preview" style="margin-top: 1rem;">
+        <div id="three-arm-container" style="width: 100%; height: 600px;"></div>
+        <div id="joint-angle-sliders" style="margin-top: 1rem;"></div>
+    </div>
+</div>
 
-        <div id="arm-preview" style="margin-top: 1rem;">
-        
-          <div id="three-arm-container" style="width: 100%; height: 600px;"></div>
-          <div id="joint-angle-sliders" style="margin-top: 1rem;"></div>
+<!-- Preview Card for Hand Gesture Detector -->
+<div class="content-box project-preview" id="gesture-preview-card">
+    <h3>✋ Hand Gesture Detector</h3>
+    <p>Use your webcam and hand gestures to see what your fingers are saying.</p>
+    <button class="expand-project-btn" data-target="gesture-ui">Try it →</button>
+</div>
 
+<!-- Full Project UI for Hand Gesture Detector -->
+<div class="content-box project-full" id="gesture-ui" style="display: none;">
+    <h3>✋ Real-Time Hand Gesture Recognition</h3>
+    <p>This app uses TensorFlow.js and your webcam to recognize simple hand gestures like pinch, point, and open palm, all in-browser with no downloads or server required.</p>
+    
+    <button id="collapse-gesture">Collapse</button>
+    <div id="gesture-app-container" style="position: relative; width: 100%; max-width: 640px; margin-top: 1rem;"></div>
+</div>
 
-        </div>
-      </div>
-
-
-            <!-- PREVIEW CARD -->
-      <div class="content-box project-preview" id="gesture-preview-card">
-        <h3>✋ Hand Gesture Detector</h3>
-        <p>Use your webcam and hand gestures to see what your fingers are saying.</p>
-        <button class="expand-project-btn" data-target="gesture-ui">Try it →</button>
-      </div>
-
-      <!-- FULL PROJECT UI (initially hidden) -->
-      <div class="content-box project-full" id="gesture-ui" style="display: none;">
-        <h3>✋ Real-Time Hand Gesture Recognition</h3>
-        <p>This app uses TensorFlow.js and your webcam to recognize simple hand gestures like pinch, point, and open palm, all in-browser with no downloads or server required.</p>
-        <button id="collapse-gesture">Collapse</button>
-        <div id="gesture-app-container" style="position: relative; width: 100%; max-width: 640px; margin-top: 1rem;"></div>
-      </div>
 
 
     </section>

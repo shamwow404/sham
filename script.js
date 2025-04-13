@@ -1,79 +1,102 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Expand/Collapse for index and tech pages
-    const expandButtons = document.querySelectorAll(".expand-btn, .expand-project-btn");
+    // Index Page Expander
+    if (document.querySelector(".expand-btn")) {
+        const expandBtn = document.querySelector(".expand-btn");
+        const content = document.querySelector(".expand-content");
+
+        expandBtn.addEventListener("click", () => {
+            const isVisible = content.style.display === "block";
+            content.style.display = isVisible ? "none" : "block";
+            expandBtn.textContent = isVisible ? "➕ What is æ-sham?" : "➖ What is æ-sham?";
+        });
+    }
+
+    // Tech Page Expanders
+    const expandButtons = document.querySelectorAll(".expand-project-btn");
 
     expandButtons.forEach(btn => {
         btn.addEventListener("click", () => {
-            const parentCard = btn.closest(".content-box");
-            const targetId = btn.dataset.target || (parentCard?.id === "arm-preview-card" ? "arm-builder-ui" : null);
+            const targetId = btn.dataset.target;
             const target = document.getElementById(targetId);
 
             if (target) {
-                // Collapse any previously expanded sections
-                document.querySelectorAll(".project-full").forEach(el => {
-                    if (el !== target) {
-                        el.style.display = "none";
-                        el.previousElementSibling.style.display = "block";
+                // Hide all other sections (both full sections and previews)
+                document.querySelectorAll(".project-full, .project-preview").forEach(el => {
+                    if (el !== target && el !== btn.closest(".content-box")) {
+                        el.style.display = "none"; // Hide both the full UI and preview
                     }
                 });
 
-                // Toggle current section visibility
-                const currentPreview = parentCard || target.closest(".project-preview");
-                if (target.style.display === "none" || !target.style.display) {
-                    target.style.display = "block";
-                    currentPreview.style.display = "none";
-                } else {
-                    target.style.display = "none";
-                    currentPreview.style.display = "block";
-                }
+                // Show the target section and hide its preview card
+                const currentPreview = btn.closest(".content-box") || target.closest(".project-preview");
+                target.style.display = "block"; // Show the full UI section
+                currentPreview.style.display = "none"; // Hide the preview card
             }
         });
     });
 
-    // Collapse functionality for specific UI elements
+    // Collapse project UI (e.g., for Arm Builder or Gesture UI)
     document.getElementById("collapse-builder")?.addEventListener("click", () => {
-        document.getElementById("arm-builder-ui").style.display = "none";
-        document.getElementById("arm-preview-card").style.display = "block";
+        const fullSection = document.getElementById("arm-builder-ui");
+        const previewCard = document.getElementById("arm-preview-card");
+
+        // Hide the full section and show the preview card
+        fullSection.style.display = "none";
+        previewCard.style.display = "block"; // Show the preview card again
+        // Ensure the gesture preview card reappears
+        document.getElementById("gesture-preview-card").style.display = "block"; 
     });
 
     document.getElementById("collapse-gesture")?.addEventListener("click", () => {
-        document.getElementById("gesture-ui").style.display = "none";
-        document.getElementById("gesture-preview-card").style.display = "block";
-    });
+        const fullSection = document.getElementById("gesture-ui");
+        const previewCard = document.getElementById("gesture-preview-card");
 
-    // Blog Snippet Loading
+        // Hide the full section and show the preview card
+        fullSection.style.display = "none";
+        previewCard.style.display = "block"; // Show the preview card again
+        // Ensure the arm builder preview card reappears
+        document.getElementById("arm-preview-card").style.display = "block";
+    });
+    });
+    
+
+    // Blog Snippet Loading for Index Page
     const snippetContainer = document.getElementById("blog-snippet");
-    fetch("blog.html")
-        .then(res => res.text())
-        .then(html => {
-            const doc = new DOMParser().parseFromString(html, "text/html");
-            const latestPost = doc.querySelector(".blog-post");
-            if (latestPost) {
-                const title = latestPost.querySelector("h3")?.textContent || "Untitled";
-                const date = latestPost.querySelector(".post-date")?.textContent || "";
-                const paragraphs = latestPost.querySelectorAll("p");
-                let preview = "";
-                for (let p of paragraphs) {
-                    if (!p.classList.contains("post-date")) {
-                        preview = p.textContent;
-                        break;
+    if (snippetContainer) {
+        fetch("blog.html")
+            .then(res => res.text())
+            .then(html => {
+                const doc = new DOMParser().parseFromString(html, "text/html");
+                const latestPost = doc.querySelector(".blog-post");
+                if (latestPost) {
+                    const title = latestPost.querySelector("h3")?.textContent || "Untitled";
+                    const date = latestPost.querySelector(".post-date")?.textContent || "";
+                    const paragraphs = latestPost.querySelectorAll("p");
+                    let preview = "";
+                    for (let p of paragraphs) {
+                        if (!p.classList.contains("post-date")) {
+                            preview = p.textContent;
+                            break;
+                        }
                     }
+                    snippetContainer.innerHTML = `
+                        <h3>From the Blog...</h3>
+                        <h4>${title}</h4>
+                        <p><em>${date}</em></p>
+                        <p>${preview}</p>
+                        <a href="blog.html">Read more...</a>
+                    `;
+                } else {
+                    snippetContainer.innerHTML = "<p>No blog posts found.</p>";
                 }
-                snippetContainer.innerHTML = `
-                    <h3>From the Blog...</h3>
-                    <h4>${title}</h4>
-                    <p><em>${date}</em></p>
-                    <p>${preview}</p>
-                    <a href="blog.html">Read more...</a>
-                `;
-            } else {
-                snippetContainer.innerHTML = "<p>No blog posts found.</p>";
-            }
-        })
-        .catch(err => {
-            snippetContainer.innerHTML = "<p>Error loading blog preview.</p>";
-            console.error(err);
-        });
+            })
+            .catch(err => {
+                snippetContainer.innerHTML = "<p>Error loading blog preview.</p>";
+                console.error(err);
+            });
+    }
+
+
     
     // Arm Builder Inputs
     const jointCountInput = document.getElementById("joint-count");
@@ -104,7 +127,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const lengths = [...document.querySelectorAll(".link-length")].map(el => parseFloat(el.value));
         generateThreeJSArm(types, lengths);
     });
-});
 
 // Three.js Arm Simulation
 function generateThreeJSArm(jointTypes, linkLengths) {
