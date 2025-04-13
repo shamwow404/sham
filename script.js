@@ -57,8 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // Ensure the arm builder preview card reappears
         document.getElementById("arm-preview-card").style.display = "block";
     });
-    });
-    
 
     // Blog Snippet Loading for Index Page
     const snippetContainer = document.getElementById("blog-snippet");
@@ -96,156 +94,154 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
+    // Arm Builder Inputs
+    const jointCountInput = document.getElementById("joint-count");
+    const jointConfigsDiv = document.getElementById("joint-configs");
 
-    
-   // Arm Builder Inputs
-   const jointCountInput = document.getElementById("joint-count");
-   const jointConfigsDiv = document.getElementById("joint-configs");
+    const updateJointInputs = () => {
+        const count = parseInt(jointCountInput.value);
+        jointConfigsDiv.innerHTML = "";
+        for (let i = 0; i < count; i++) {
+            const row = document.createElement("div");
+            row.innerHTML = `
+                <label>Joint ${i + 1}:</label>
+                <select class="joint-type">
+                    <option value="revolute">Revolute</option>
+                    <option value="prismatic">Prismatic</option>
+                </select>
+                <input type="number" class="link-length" placeholder="Link length (m)" min="0.1" step="0.1" value="0.5">
+            `;
+            jointConfigsDiv.appendChild(row);
+        }
+    };
 
-   const updateJointInputs = () => {
-       const count = parseInt(jointCountInput.value);
-       jointConfigsDiv.innerHTML = "";
-       for (let i = 0; i < count; i++) {
-           const row = document.createElement("div");
-           row.innerHTML = `
-               <label>Joint ${i + 1}:</label>
-               <select class="joint-type">
-                   <option value="revolute">Revolute</option>
-                   <option value="prismatic">Prismatic</option>
-               </select>
-               <input type="number" class="link-length" placeholder="Link length (m)" min="0.1" step="0.1" value="0.5">
-           `;
-           jointConfigsDiv.appendChild(row);
-       }
-   };
+    jointCountInput?.addEventListener("change", updateJointInputs);
+    updateJointInputs();
 
-   jointCountInput?.addEventListener("change", updateJointInputs);
-   updateJointInputs();
-
-   document.getElementById("generate-arm")?.addEventListener("click", () => {
-       const types = [...document.querySelectorAll(".joint-type")].map(el => el.value);
-       const lengths = [...document.querySelectorAll(".link-length")].map(el => parseFloat(el.value));
-       generateThreeJSArm(types, lengths);
-   });
-
+    document.getElementById("generate-arm")?.addEventListener("click", () => {
+        const types = [...document.querySelectorAll(".joint-type")].map(el => el.value);
+        const lengths = [...document.querySelectorAll(".link-length")].map(el => parseFloat(el.value));
+        generateThreeJSArm(types, lengths);
+    });
+});
 
 // Three.js Arm Simulation
 function generateThreeJSArm(jointTypes, linkLengths) {
-   const container = document.getElementById("three-arm-container");
-   container.innerHTML = "";
+    const container = document.getElementById("three-arm-container");
+    container.innerHTML = "";
 
-   const scene = new THREE.Scene();
-   scene.background = new THREE.Color(0x000000);
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
 
-   const totalHeight = linkLengths.reduce((sum, len) => sum + len, 0);
-   const midHeight = totalHeight / 2;
+    const totalHeight = linkLengths.reduce((sum, len) => sum + len, 0);
+    const midHeight = totalHeight / 2;
 
-   const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-   camera.position.set(0, midHeight, totalHeight * 1.5);
-   camera.lookAt(0, midHeight, 0);
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.set(0, midHeight, totalHeight * 1.5);
+    camera.lookAt(0, midHeight, 0);
 
-   const renderer = new THREE.WebGLRenderer({ antialias: true });
-   renderer.setSize(container.clientWidth, container.clientHeight);
-   container.appendChild(renderer.domElement);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
 
-   const light = new THREE.DirectionalLight(0xffffff, 1);
-   light.position.set(10, 10, 10);
-   scene.add(light);
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(10, 10, 10);
+    scene.add(light);
 
-   // Base
-   const baseGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32);
-   const baseMaterial = new THREE.MeshPhongMaterial({ color: 0x666666 });
-   const base = new THREE.Mesh(baseGeometry, baseMaterial);
-   base.position.set(0, 0.1, 0);
-   scene.add(base);
+    // Base
+    const baseGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32);
+    const baseMaterial = new THREE.MeshPhongMaterial({ color: 0x666666 });
+    const base = new THREE.Mesh(baseGeometry, baseMaterial);
+    base.position.set(0, 0.1, 0);
+    scene.add(base);
 
-   let currentY = 0.2;
-   const jointMeshes = [];
+    let currentY = 0.2;
+    const jointMeshes = [];
 
-   for (let i = 0; i < jointTypes.length; i++) {
-       const jointType = jointTypes[i];
-       const length = linkLengths[i];
+    for (let i = 0; i < jointTypes.length; i++) {
+        const jointType = jointTypes[i];
+        const length = linkLengths[i];
 
-       const jointGroup = new THREE.Group();
-       jointGroup.position.y = currentY;
+        const jointGroup = new THREE.Group();
+        jointGroup.position.y = currentY;
 
-       const joint = new THREE.Object3D();
-       jointGroup.add(joint);
+        const joint = new THREE.Object3D();
+        jointGroup.add(joint);
 
-       // Color and geometry logic for joints
-       let material, geometry;
+        // Define material and geometry based on joint type
+        let material, geometry;
 
-       if (jointType === "Revolute") {
-           geometry = new THREE.CylinderGeometry(0.05, 0.05, length, 16);
-           material = new THREE.MeshPhongMaterial({ color: 0xFF69B4 }); // Pink for Revolute
-       } else {
-           geometry = new THREE.CylinderGeometry(0.05, 0.05, length, 16);
-           material = new THREE.MeshPhongMaterial({ color: 0x6ECFF6 }); // Blue for Prismatic
-       }
+        if (jointType === "Revolute") {
+            geometry = new THREE.CylinderGeometry(0.05, 0.05, length, 16);
+            material = new THREE.MeshPhongMaterial({ color: 0xFF69B4 }); // Pink for Revolute
+        } else {
+            geometry = new THREE.CylinderGeometry(0.05, 0.05, length, 16);
+            material = new THREE.MeshPhongMaterial({ color: 0x6ECFF6 }); // Blue for Prismatic
+        }
 
-       const link = new THREE.Mesh(geometry, material);
-       link.position.y = length / 2;
-       joint.add(link);
+        const link = new THREE.Mesh(geometry, material);
+        link.position.y = length / 2;
+        joint.add(link);
 
-       scene.add(jointGroup);
-       jointMeshes.push({ group: jointGroup, joint, type: jointType, length });
+        scene.add(jointGroup);
+        jointMeshes.push({ group: jointGroup, joint, type: jointType, length });
 
-       currentY += length;
-   }
+        currentY += length;
+    }
 
-   const effectorGeometry = new THREE.SphereGeometry(0.07, 32, 32);
-   const effectorMaterial = new THREE.MeshPhongMaterial({ color: 0xffd700 });
-   const effector = new THREE.Mesh(effectorGeometry, effectorMaterial);
-   const lastJoint = jointMeshes[jointMeshes.length - 1];
-   effector.position.y = lastJoint.length;
-   lastJoint.joint.add(effector);
-   lastJoint.effector = effector;
+    const effectorGeometry = new THREE.SphereGeometry(0.07, 32, 32);
+    const effectorMaterial = new THREE.MeshPhongMaterial({ color: 0xffd700 });
+    const effector = new THREE.Mesh(effectorGeometry, effectorMaterial);
+    const lastJoint = jointMeshes[jointMeshes.length - 1];
+    effector.position.y = lastJoint.length;
+    lastJoint.joint.add(effector);
+    lastJoint.effector = effector;
 
-   function animate() {
-       requestAnimationFrame(animate);
-       renderer.render(scene, camera);
-   }
+    function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+    }
 
-   animate();
-   setupJointSliders(jointMeshes);
+    animate();
+    setupJointSliders(jointMeshes);
 }
 
 // Joint Sliders
 function setupJointSliders(jointMeshes) {
-   const slidersContainer = document.getElementById("joint-angle-sliders");
-   slidersContainer.innerHTML = "";
+    const slidersContainer = document.getElementById("joint-angle-sliders");
+    slidersContainer.innerHTML = "";
 
-   jointMeshes.forEach((jointData, index) => {
-       const label = document.createElement("label");
-       label.textContent = `Joint ${index + 1} ${jointData.type === "Prismatic" ? "Extension" : "Angle"}`;
+    jointMeshes.forEach((jointData, index) => {
+        const label = document.createElement("label");
+        label.textContent = `Joint ${index + 1} ${jointData.type === "Prismatic" ? "Extension" : "Angle"}`;
 
-       const slider = document.createElement("input");
-       slider.type = "range";
-       slider.min = jointData.type === "Prismatic" ? "0" : "-180";
-       slider.max = jointData.type === "Prismatic" ? "2" : "180";
-       slider.step = "0.01";
-       slider.value = "0";
-       slider.style.width = "150px";
-       slider.style.accentColor = jointData.type === "Prismatic" ? "#6ECFF6" : "#FF69B4";
+        const slider = document.createElement("input");
+        slider.type = "range";
+        slider.min = jointData.type === "Prismatic" ? "0" : "-180";
+        slider.max = jointData.type === "Prismatic" ? "2" : "180";
+        slider.step = "0.01";
+        slider.value = "0";
+        slider.style.width = "150px";
+        slider.style.accentColor = jointData.type === "Prismatic" ? "#6ECFF6" : "#FF69B4";
 
-       slider.addEventListener("input", () => {
-           if (jointData.type === "Revolute") {
-               jointData.group.rotation.z = THREE.MathUtils.degToRad(parseFloat(slider.value));
-           } else {
-               const offset = parseFloat(slider.value);
-               jointData.joint.position.y = offset;
-               const inner = jointData.joint.getObjectByName("prismaticInner");
-               if (inner) inner.position.y = offset + jointData.length * 0.4;
-           }
-       });
+        slider.addEventListener("input", () => {
+            if (jointData.type === "Revolute") {
+                jointData.group.rotation.z = THREE.MathUtils.degToRad(parseFloat(slider.value)); // Revolute joint rotates
+            } else {
+                const offset = parseFloat(slider.value);
+                jointData.joint.position.y = offset; // Prismatic joint moves along the y-axis
+                const inner = jointData.joint.getObjectByName("prismaticInner");
+                if (inner) inner.position.y = offset + jointData.length * 0.4; // Adjust inner link for prismatic joint
+            }
+        });
 
-       const wrapper = document.createElement("div");
-       wrapper.style.display = "flex";
-       wrapper.style.alignItems = "center";
-       wrapper.style.gap = "0.5rem";
+        const wrapper = document.createElement("div");
+        wrapper.style.display = "flex";
+        wrapper.style.alignItems = "center";
+        wrapper.style.gap = "0.5rem";
 
-       wrapper.appendChild(label);
-       wrapper.appendChild(slider);
-       slidersContainer.appendChild(wrapper);
-   });
+        wrapper.appendChild(label);
+        wrapper.appendChild(slider);
+        slidersContainer.appendChild(wrapper);
+    });
 }
