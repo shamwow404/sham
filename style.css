@@ -301,3 +301,67 @@ body {
     flex-wrap: wrap;
     gap: 10px;
 }
+
+#music-player {
+    position: fixed;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    width: 320px;
+    max-width: 90%;
+    background-color: var(--accent-color);
+    border: 2px dashed var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border-radius: 10px;
+    z-index: 1001;
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  
+  /* Hidden body when collapsed */
+  #music-player.collapsed #player-body {
+    display: none;
+  }
+  
+  .player-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+  }
+  
+  .player-buttons button {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    color: white;
+  }
+  
+  #player-body {
+    padding: 0.5rem 1rem 1rem;
+    display: block;
+    background-color: var(--accent-color);
+  }
+  
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+  }
+  
+  #yt-frame-container iframe {
+    display: block;
+    margin: 0 auto;
+    width: 320px;
+    height: 180px;
+    border: none;
+    border-radius: 8px;
+  }
+  

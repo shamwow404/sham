@@ -255,4 +255,42 @@ document.addEventListener("DOMContentLoaded", () => {
       slidersContainer.appendChild(wrapper);
     });
   }
+  // Player stuff
+  document.getElementById("load-track")?.addEventListener("click", () => {
+    const mood = document.getElementById("mood-select")?.value || "chill";
+  
+    // Hardcoded number of tracks per genre — you can make this dynamic later
+    const trackCount = {
+      chill: 3,
+      hyper: 1,
+      cyberpunk: 1,
+      vaporwave: 3,
+      funk: 2
+    };
+  
+    const max = trackCount[mood] || 1;
+    const randomIndex = Math.floor(Math.random() * max) + 1;
+    const audioPath = `assets/music/${mood}/${randomIndex}.mp3`;
+  
+    const audio = document.getElementById("audio-player");
+    audio.src = audioPath;
+    audio.play();
+  });
+  
+  // Collapse toggle
+  document.getElementById("collapse-btn")?.addEventListener("click", () => {
+    const wrapper = document.getElementById("music-player");
+    const collapsed = wrapper.classList.toggle("collapsed");
+    document.getElementById("collapse-btn").textContent = collapsed ? "⬆" : "⬇";
+  });
+  
+  
+  // Mute/unmute toggle
+  document.getElementById("mute-btn")?.addEventListener("click", () => {
+    const audio = document.getElementById("audio-player");
+    if (!audio) return;
+    audio.muted = !audio.muted;
+    document.getElementById("mute-btn").textContent = audio.muted ? "🔇" : "🔊";
+  });
+  
   

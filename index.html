@@ -35,8 +35,37 @@
 
   <footer>
     <p>© 2025 - Made with 💖 and code!</p>
-  </footer>
 
+    <div id="music-player" class="collapsed">
+        <div class="player-header">
+          <span>🎵 Music Player</span>
+          <div class="player-buttons">
+            <button id="mute-btn">🔇</button>
+            <button id="collapse-btn">⬇</button>
+          </div>
+        </div>
+      
+        <div id="player-body">
+          <div class="player-controls">
+            <label for="mood-select">Pick a vibe:</label>
+            <select id="mood-select">
+            <option value="chill">Chill</option>
+            <option value="hyper">Hyper</option>
+            <option value="cyberpunk">Cyberpunk/Midempo</option>
+            <option value="funk">Funk/Dance</option>
+            </select>
+
+            <button id="load-track">Load</button>
+          </div>
+          <audio id="audio-player" controls autoplay loop>
+            <source src="assets/music/chill/1.mp3" type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+          
+        </div>
+      </div>
+      
+  
   <script src="script.js"></script>
 </body>
 </html>
