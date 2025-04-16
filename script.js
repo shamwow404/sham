@@ -132,3 +132,112 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("collapse-btn").textContent = collapsed ? "⬆" : "⬇";
   });
   
+//// 🎮 æ-PET LOGIC — FINAL CORRECTED ///////////////////////////////////////
+
+// === ⬇ STATE VARIABLES ===
+let hunger = 0;        // 0 = full, 10 = starving
+let boredom = 0;       // 0 = engaged, 10 = bored
+let currentMood = "normal";
+
+let petInterval;
+let currentFrame = 1;
+let lastUserActivity = Date.now();  // used to detect boredom
+
+// === ⬇ DOM ELEMENTS ===
+const petSprite = document.getElementById("pet-sprite");
+const petStatus = document.getElementById("pet-status");
+
+// === ⬇ MAIN ANIMATION PLAYER ===
+function playPetAnimation(emotion) {
+  clearInterval(petInterval);
+  currentFrame = 1;
+  currentMood = emotion;
+
+  // Mood label text
+  const moodLabels = {
+    normal: "Mood: Normal",
+    curious: "Mood: Curious",
+    sad: "Mood: Sad",
+    annoyed: "Mood: Annoyed"
+  };
+  petStatus.innerText = moodLabels[emotion] || `Mood: ${emotion}`;
+
+  petInterval = setInterval(() => {
+    const path = `assets/pet/${emotion}/${currentFrame}.png`;
+    petSprite.src = path;
+    currentFrame++;
+
+    const testImg = new Image();
+    testImg.src = `assets/pet/${emotion}/${currentFrame}.png`;
+    testImg.onerror = () => currentFrame = 1;
+  }, 600); // animation speed
+}
+
+// === ⬇ MOOD BAR UI ===
+function updateBars() {
+  const hungerBar = document.getElementById("hunger-bar");
+  const boredomBar = document.getElementById("boredom-bar");
+
+  const hungerLevel = 100 - (hunger * 10);
+  const boredomLevel = 100 - (boredom * 10);
+
+  hungerBar.style.width = `${hungerLevel}%`;
+  boredomBar.style.width = `${boredomLevel}%`;
+}
+
+// === ⬇ FEED & PLAY FUNCTIONS ===
+function feedPet() {
+  if (hunger > 3) {
+    hunger = Math.max(0, hunger - 4);
+    playPetAnimation("normal");
+  } else {
+    playPetAnimation("annoyed");
+  }
+  updateBars();
+}
+
+function playWithPet() {
+  if (boredom > 3) {
+    boredom = Math.max(0, boredom - 4);
+    playPetAnimation("normal");
+  } else {
+    playPetAnimation("annoyed");
+  }
+  updateBars();
+}
+
+// === ⬇ MOOD LOGIC
+function checkMood() {
+  if (hunger >= 7 || boredom >= 7) {
+    playPetAnimation("sad");
+  } else if (currentMood !== "curious") {
+    playPetAnimation("normal");
+  }
+}
+
+// === ⬇ BOREDOM TIMER (idle-only)
+setInterval(() => {
+  const minutesSinceActivity = (Date.now() - lastUserActivity) / 60000;
+  if (minutesSinceActivity >= 2) {
+    boredom = Math.min(10, boredom + 1);
+    updateBars();
+    checkMood();
+  }
+}, 15000);
+
+// === ⬇ HUNGER TIMER (every 3 mins)
+setInterval(() => {
+  hunger = Math.min(10, hunger + 1);
+  updateBars();
+  checkMood();
+}, 180000);
+
+// === ⬇ CURIOSITY TRIGGER
+document.addEventListener("click", () => {
+  lastUserActivity = Date.now();
+  if (currentMood !== "annoyed") {
+    boredom = Math.max(0, boredom - 2);
+    if (currentMood !== "normal") playPetAnimation("curious");
+    updateBars();
+  }
+});
