@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   
-  // Music player controls
+  // Music player controlssss
   document.getElementById("load-track")?.addEventListener("click", () => {
     const mood = document.getElementById("mood-select")?.value || "chill";
   
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("collapse-btn").textContent = collapsed ? "⬆" : "⬇";
   });
   
-//// 🎮 æ-PET LOGIC — FINAL CORRECTED ///////////////////////////////////////
+//// 🎮 æ-PET LOGIC ///////////////////////////////////////
 
 // === ⬇ STATE VARIABLES ===
 let hunger = 0;        // 0 = full, 10 = starving
@@ -225,7 +225,7 @@ setInterval(() => {
   }
 }, 15000);
 
-// === ⬇ HUNGER TIMER (every 3 mins)
+// === ⬇ HUNGER TIMER (every 3 mins atm)
 setInterval(() => {
   hunger = Math.min(10, hunger + 1);
   updateBars();
@@ -241,3 +241,69 @@ document.addEventListener("click", () => {
     updateBars();
   }
 });
+
+
+//// ROBOT ARM LOGIC ////////////////////////////////////////////////
+
+function generateThreeJSArm(jointTypes, linkLengths) {
+  const container = document.getElementById("three-arm-container");
+  container.innerHTML = "";
+
+  const scene = new THREE.Scene();
+
+  const totalHeight = linkLengths.reduce((acc, len) => acc + len, 0);
+  container.style.height = `${Math.max(300, totalHeight * 200)}px`;
+  const midHeight = totalHeight / 2;
+
+  const camera = new THREE.PerspectiveCamera(
+    45,
+    container.clientWidth / container.clientHeight,
+    0.1,
+    1000
+  );
+  camera.position.set(0.5, midHeight, totalHeight + 2);
+  camera.lookAt(0, midHeight, 0);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  container.appendChild(renderer.domElement);
+
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(2, totalHeight, 2);
+  scene.add(light);
+
+  const base = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32),
+    new THREE.MeshStandardMaterial({ color: 0x444444 })
+  );
+  base.position.y = 0.1;
+  scene.add(base);
+
+  let currentY = 0.2;
+  let prev = base;
+
+  const links = [];
+
+  for (let i = 0; i < jointTypes.length; i++) {
+    const length = linkLengths[i];
+    const geometry = new THREE.BoxGeometry(0.1, length, 0.1);
+    const color = jointTypes[i] === "R" ? 0xff70aa : 0x70aaff;
+
+    const material = new THREE.MeshStandardMaterial({ color });
+    const link = new THREE.Mesh(geometry, material);
+    link.position.y = currentY + length / 2;
+
+    scene.add(link);
+    links.push(link);
+
+    currentY += length;
+    prev = link;
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+  }
+
+  animate();
+}
